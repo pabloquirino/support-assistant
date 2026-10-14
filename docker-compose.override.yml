@@ -1,0 +1,7 @@
+services:
+  db:
+    ports:
+      - "${DB_PORT:-1433}:1433"
+  api:
+    ports:
+      - "${API_PORT:-5000}:8080"
