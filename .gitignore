@@ -1,0 +1,19 @@
+# Segredos
+.env
+
+# .NET
+bin/
+obj/
+*.user
+.vs/
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+
+# IDEs / SO
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
