@@ -25,6 +25,8 @@ services:
       ConnectionStrings__Default: "Server=db;Database=${DB_NAME:-AssistantSupport};User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True"
       Storage__Path: /app/storage
       Storage__MaxUploadMb: ${UPLOAD_MAX_MB:-10}
+      Database__AutoMigrate: ${DB_AUTO_MIGRATE:-true}
+      Database__Seed: ${DB_SEED:-true}
     volumes:
       - files-data:/app/storage
     depends_on:
@@ -35,7 +37,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 20s
 
   web:
     build:
