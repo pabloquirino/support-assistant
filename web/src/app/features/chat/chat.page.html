@@ -21,10 +21,11 @@
     </div>
   </header>
 
-  <main #scroller class="flex-1 overflow-y-auto" role="log" aria-live="polite" aria-label="Conversa">
+  <main #scroller class="flex-1 overflow-y-auto" role="log" aria-label="Conversa">
     <div class="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-6">
       @for (m of store.messages(); track m.id) {
         <app-message
+          [attr.data-message-id]="m.id"
           [message]="m"
           [disabled]="store.busy()"
           [active]="m.id === store.activeNodeId()"
@@ -33,6 +34,7 @@
           (optionPicked)="store.answer(m.id, $event)"
           (backClicked)="store.goBack()"
           (restartClicked)="store.restartFlow()"
+          (feedbackGiven)="store.sendFeedback(m.id, $event)"
         />
       }
 

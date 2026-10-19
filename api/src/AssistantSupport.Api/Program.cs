@@ -1,7 +1,9 @@
 using System.Text.Json.Serialization;
 using AssistantSupport.Api.Data;
 using AssistantSupport.Api.Data.Seed;
+using AssistantSupport.Api.Features.Attachments;
 using AssistantSupport.Api.Features.Catalog;
+using AssistantSupport.Api.Features.Feedbacks;
 using AssistantSupport.Api.Features.Flow;
 using AssistantSupport.Api.Features.Search;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +15,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("Default"),
         sql => sql.EnableRetryOnFailure()));
 
+// Enums serializados como texto ("Question", "Steps"...), alinhado ao que está no banco.
 builder.Services.ConfigureHttpJsonOptions(o =>
     o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
@@ -36,5 +39,7 @@ api.MapHealthChecks("/health");
 api.MapCatalogEndpoints();
 api.MapSearchEndpoints();
 api.MapFlowEndpoints();
+api.MapAttachmentEndpoints();
+api.MapFeedbackEndpoints();
 
 app.Run();

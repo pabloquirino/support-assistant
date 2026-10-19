@@ -5,10 +5,7 @@
     <app-bot-avatar />
   }
 
-  <div
-    class="min-w-0 max-w-[85%] wrap-break-word rounded-2xl px-4 py-2.5 text-sm shadow-sm"
-    [class]="bubbleClass()"
-  >
+  <div [class]="bubbleClass()">
     @if (m.kind === 'user') {
       <p class="whitespace-pre-line">{{ m.text }}</p>
     }
@@ -80,13 +77,14 @@
     }
 
     @if (m.kind === 'solution') {
-      <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700">Solução</p>
-      <h2 class="mt-0.5 text-base font-semibold text-slate-900">{{ m.solution.title }}</h2>
-      <p class="mt-1 text-slate-600">{{ m.solution.summary }}</p>
-      <p class="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">
-        {{ m.solution.blocks.length }} bloco(s) cadastrado(s). O painel completo (checklist, copiar,
-        anexos e feedback) entra na etapa 5.
-      </p>
+      <app-solution-panel
+        [message]="m"
+        [active]="active()"
+        [disabled]="disabled()"
+        (backClicked)="backClicked.emit()"
+        (restartClicked)="restartClicked.emit()"
+        (feedbackGiven)="feedbackGiven.emit($event)"
+      />
     }
 
     @if (canNavigate()) {

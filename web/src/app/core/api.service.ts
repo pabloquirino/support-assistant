@@ -31,4 +31,14 @@ export class ApiService {
   node(nodeId: number): Observable<FlowNode> {
     return this.http.get<FlowNode>(`${this.base}/nodes/${nodeId}`);
   }
+
+  /** Registra "Isso resolveu?" para uma solução. */
+  sendFeedback(solutionId: number, resolved: boolean): Observable<void> {
+    return this.http.post<void>(`${this.base}/feedback`, { solutionId, resolved });
+  }
+
+  /** URL de download de um PDF (o navegador faz a requisição direto). */
+  attachmentUrl(attachmentId: string): string {
+    return `${this.base}/attachments/${attachmentId}/download`;
+  }
 }
