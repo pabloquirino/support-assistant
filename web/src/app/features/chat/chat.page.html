@@ -27,8 +27,12 @@
         <app-message
           [message]="m"
           [disabled]="store.busy()"
+          [active]="m.id === store.activeNodeId()"
           (categoryPicked)="store.pickCategory(m.id, $event)"
           (topicPicked)="store.pickTopic(m.id, $event)"
+          (optionPicked)="store.answer(m.id, $event)"
+          (backClicked)="store.goBack()"
+          (restartClicked)="store.restartFlow()"
         />
       }
 

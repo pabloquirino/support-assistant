@@ -1,25 +1,52 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import { ApiService } from '../../core/api.service';
-import { Category, ChatMessage, NewChatMessage, TopicChoice } from '../../core/models';
+import {
+  Category,
+  ChatMessage,
+  FlowNode,
+  FlowOption,
+  NewChatMessage,
+  QuestionMessage,
+  SolutionMessage,
+  TopicChoice,
+} from '../../core/models';
 
 const MIN_QUERY_LENGTH = 2;
 
 type IsStale = () => boolean;
+
+/** Nó recebido da API com dados inconsistentes (ex.: pergunta sem opções). */
+class FlowDataError extends Error {}
 
 @Injectable({ providedIn: 'root' })
 export class ChatStore {
   private readonly api = inject(ApiService);
 
   private seq = 0;
+  private flowSeq = 0;
   /** Incrementa em "Nova conversa": respostas pendentes da conversa anterior são descartadas. */
   private epoch = 0;
   private categoriesCache: Category[] | null = null;
 
   readonly messages = signal<ChatMessage[]>([]);
   readonly busy = signal(false);
+
+  /**
+   * Id do nó (pergunta ou solução) com o qual o usuário ainda pode interagir:
+   * o último nó da conversa, desde que não haja mensagem do usuário depois dele.
+   */
+  readonly activeNodeId = computed<number | null>(() => {
+    const list = this.messages();
+    for (let i = list.length - 1; i >= 0; i--) {
+      const m = list[i];
+      if (m.kind === 'user') return null;
+      if (m.kind === 'question' || m.kind === 'solution') return m.id;
+    }
+    return null;
+  });
 
   // ------------------------------------------------------------
   // Ciclo da conversa
@@ -44,7 +71,7 @@ export class ChatStore {
   }
 
   // ------------------------------------------------------------
-  // Ações do usuário
+  // Busca e navegação por categoria
   // ------------------------------------------------------------
   async send(raw: string): Promise<void> {
     const text = raw.trim();
@@ -79,7 +106,7 @@ export class ChatStore {
       if (choices.length === 1) {
         const [only] = choices;
         this.push({ kind: 'text', text: `Encontrei um procedimento: ${only.title} (${only.categoryName}).` });
-        this.openTopic(only);
+        await this.openTopic(only, stale);
         return;
       }
 
@@ -119,22 +146,128 @@ export class ChatStore {
     });
   }
 
-  pickTopic(messageId: number, topic: TopicChoice): void {
+  async pickTopic(messageId: number, topic: TopicChoice): Promise<void> {
     if (this.busy()) return;
 
     this.markChosen(messageId, topic.id);
     this.push({ kind: 'user', text: topic.title });
-    this.openTopic(topic);
+
+    await this.run(async (stale) => {
+      try {
+        await this.openTopic(topic, stale);
+      } catch (err) {
+        // Libera o card para o usuário tentar de novo.
+        if (!stale()) this.markChosen(messageId, undefined);
+        throw err;
+      }
+    });
   }
 
-  /**
-   * Gancho da etapa 4: aqui entra a chamada a /api/topics/{id}/start e o motor de perguntas.
-   * Por enquanto apenas confirma a seleção.
-   */
-  private openTopic(topic: TopicChoice): void {
-    this.push({
-      kind: 'text',
-      text: `Assunto selecionado: ${topic.title}. O fluxo guiado de perguntas e a solução em blocos entram nas próximas etapas.`,
+  // ------------------------------------------------------------
+  // Motor do fluxo
+  // ------------------------------------------------------------
+
+  /** Responde a pergunta ativa e avança para o nó apontado pela opção. */
+  async answer(messageId: number, option: FlowOption): Promise<void> {
+    if (this.busy() || this.activeNodeId() !== messageId) return;
+
+    const question = this.messages().find((m) => m.id === messageId);
+    if (!question || question.kind !== 'question' || question.chosenOptionId !== undefined) return;
+
+    const { flowId, step } = question;
+
+    this.messages.update((list) =>
+      list.map((m) => (m.id === messageId && m.kind === 'question' ? { ...m, chosenOptionId: option.id } : m)),
+    );
+    this.push({ kind: 'user', text: option.text });
+
+    await this.run(async (stale) => {
+      try {
+        const node = await firstValueFrom(this.api.node(option.nextNodeId));
+        if (stale()) return;
+        this.pushNode(node, flowId, step + 1);
+      } catch (err) {
+        // Desfaz a escolha: remove a resposta do usuário e reabre a pergunta.
+        if (!stale()) this.truncateTo(this.indexOf(messageId));
+        throw err;
+      }
+    });
+  }
+
+  /** Volta uma pergunta: reabre o nó anterior e descarta a resposta e o nó atual. */
+  goBack(): void {
+    if (this.busy()) return;
+
+    const current = this.activeNode();
+    if (!current || current.step === 0) return;
+
+    this.truncateToStep(current.flowId, current.step - 1);
+  }
+
+  /** Volta ao nó raiz do assunto atual, sem nova requisição. */
+  restartFlow(): void {
+    if (this.busy()) return;
+
+    const current = this.activeNode();
+    if (!current || current.step === 0) return;
+
+    this.truncateToStep(current.flowId, 0);
+  }
+
+  private async openTopic(topic: TopicChoice, stale: IsStale): Promise<void> {
+    const node = await firstValueFrom(this.api.topicStart(topic.id));
+    if (stale()) return;
+
+    this.pushNode(node, ++this.flowSeq, 0);
+  }
+
+  private pushNode(node: FlowNode, flowId: number, step: number): void {
+    if (node.type === 'Question') {
+      if (!node.questionText || node.options.length === 0) {
+        throw new FlowDataError(`Pergunta ${node.id} sem texto ou sem opções.`);
+      }
+
+      this.push({ kind: 'question', flowId, step, text: node.questionText, options: node.options });
+      return;
+    }
+
+    if (!node.solution) {
+      throw new FlowDataError(`Solução ${node.id} sem conteúdo.`);
+    }
+
+    this.push({ kind: 'solution', flowId, step, topicTitle: node.topicTitle, solution: node.solution });
+  }
+
+  private activeNode(): QuestionMessage | SolutionMessage | null {
+    const id = this.activeNodeId();
+    if (id === null) return null;
+
+    const m = this.messages().find((x) => x.id === id);
+    return m && (m.kind === 'question' || m.kind === 'solution') ? m : null;
+  }
+
+  private truncateToStep(flowId: number, step: number): void {
+    const idx = this.messages().findIndex(
+      (m) => m.kind === 'question' && m.flowId === flowId && m.step === step,
+    );
+    if (idx >= 0) this.truncateTo(idx);
+  }
+
+  private indexOf(messageId: number): number {
+    return this.messages().findIndex((m) => m.id === messageId);
+  }
+
+  /** Mantém o histórico até a mensagem do índice (inclusive) e reabre essa pergunta, se for uma. */
+  private truncateTo(index: number): void {
+    if (index < 0) return;
+
+    this.messages.update((list) => {
+      const kept = list.slice(0, index + 1);
+      const last = kept[index];
+      if (last.kind === 'question') {
+        kept[index] = { ...last, chosenOptionId: undefined };
+      }
+      return kept;
     });
   }
 
@@ -168,7 +301,7 @@ export class ChatStore {
     }
   }
 
-  private markChosen(messageId: number, chosenId: number): void {
+  private markChosen(messageId: number, chosenId: number | undefined): void {
     this.messages.update((list) =>
       list.map((m) =>
         m.id === messageId && (m.kind === 'categories' || m.kind === 'topics') ? { ...m, chosenId } : m,
@@ -181,8 +314,12 @@ export class ChatStore {
   }
 
   private errorText(err: unknown): string {
+    if (err instanceof FlowDataError) {
+      return 'Este passo do procedimento está incompleto. Avise o administrador do conteúdo.';
+    }
     if (err instanceof HttpErrorResponse) {
       if (err.status === 0) return 'Não consegui falar com o servidor. Verifique a conexão e tente novamente.';
+      if (err.status === 404) return 'Este passo não está mais disponível. Use "Recomeçar" ou faça uma nova busca.';
       if (err.status >= 500) return 'O servidor encontrou um erro. Tente novamente em instantes.';
     }
     return 'Não foi possível concluir a consulta. Tente novamente.';
