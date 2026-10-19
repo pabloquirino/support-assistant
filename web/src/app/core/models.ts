@@ -27,6 +27,52 @@ export interface SearchResponse {
   results: SearchResult[];
 }
 
+// ---- Fluxo (árvore de decisão) ----
+
+export type NodeType = 'Question' | 'Solution';
+
+export type BlockType = 'Steps' | 'CustomerMessage' | 'Ticket' | 'Attachments' | 'Note' | 'Warning';
+
+export interface FlowOption {
+  id: number;
+  text: string;
+  nextNodeId: number;
+}
+
+export interface AttachmentInfo {
+  id: string;
+  fileName: string;
+  sizeBytes: number;
+}
+
+export interface SolutionBlock {
+  id: number;
+  type: BlockType;
+  title: string;
+  contentMarkdown: string;
+  sortOrder: number;
+  collapsedByDefault: boolean;
+  attachments: AttachmentInfo[];
+}
+
+export interface SolutionData {
+  id: number;
+  title: string;
+  summary: string;
+  blocks: SolutionBlock[];
+}
+
+/** Resposta de /api/topics/{id}/start e /api/nodes/{id}. */
+export interface FlowNode {
+  id: number;
+  topicId: number;
+  topicTitle: string;
+  type: NodeType;
+  questionText: string | null;
+  options: FlowOption[];
+  solution: SolutionData | null;
+}
+
 // ---- Modelo do chat ----
 
 /** Opção de assunto exibida em um card de escolha. */
@@ -66,7 +112,34 @@ export interface TopicsMessage extends BaseMessage {
   chosenId?: number;
 }
 
-export type ChatMessage = UserMessage | TextMessage | CategoriesMessage | TopicsMessage;
+/** Campos comuns às mensagens que representam um nó da árvore. */
+interface FlowMessage extends BaseMessage {
+  /** Identifica uma execução do fluxo de um assunto (muda a cada vez que o assunto é aberto). */
+  flowId: number;
+  /** Profundidade no fluxo: 0 = nó raiz. */
+  step: number;
+}
+
+export interface QuestionMessage extends FlowMessage {
+  kind: 'question';
+  text: string;
+  options: FlowOption[];
+  chosenOptionId?: number;
+}
+
+export interface SolutionMessage extends FlowMessage {
+  kind: 'solution';
+  topicTitle: string;
+  solution: SolutionData;
+}
+
+export type ChatMessage =
+  | UserMessage
+  | TextMessage
+  | CategoriesMessage
+  | TopicsMessage
+  | QuestionMessage
+  | SolutionMessage;
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 
