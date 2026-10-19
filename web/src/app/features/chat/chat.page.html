@@ -1,0 +1,57 @@
+<div class="flex h-dvh flex-col bg-slate-100">
+  <header class="border-b border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
+      <div class="flex items-center gap-3">
+        <div class="flex size-9 items-center justify-center rounded-xl bg-indigo-600 text-sm font-semibold text-white">
+          AS
+        </div>
+        <div>
+          <h1 class="text-base font-semibold leading-tight text-slate-900">Assistant Support</h1>
+          <p class="text-xs text-slate-500">Procedimentos de suporte, passo a passo</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
+        (click)="store.reset()"
+      >
+        Nova conversa
+      </button>
+    </div>
+  </header>
+
+  <main #scroller class="flex-1 overflow-y-auto" role="log" aria-live="polite" aria-label="Conversa">
+    <div class="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-6">
+      @for (m of store.messages(); track m.id) {
+        <app-message
+          [message]="m"
+          [disabled]="store.busy()"
+          (categoryPicked)="store.pickCategory(m.id, $event)"
+          (topicPicked)="store.pickTopic(m.id, $event)"
+        />
+      }
+
+      @if (store.busy()) {
+        <div class="flex items-start gap-3">
+          <app-bot-avatar />
+          <div
+            class="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-4 py-3.5 shadow-sm ring-1 ring-slate-200"
+            role="status"
+            aria-label="Buscando"
+          >
+            <span class="size-1.5 animate-bounce rounded-full bg-slate-400"></span>
+            <span class="size-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:150ms]"></span>
+            <span class="size-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:300ms]"></span>
+          </div>
+        </div>
+      }
+    </div>
+  </main>
+
+  <footer class="border-t border-slate-200 bg-white">
+    <div class="mx-auto max-w-3xl px-4 py-3">
+      <app-chat-input [disabled]="store.busy()" (submitted)="store.send($event)" />
+    </div>
+  </footer>
+</div>
