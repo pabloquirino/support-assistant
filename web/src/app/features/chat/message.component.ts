@@ -2,10 +2,11 @@ import { Component, computed, input, output } from '@angular/core';
 
 import { Category, ChatMessage, FlowOption, MatchSource, TopicChoice } from '../../core/models';
 import { BotAvatarComponent } from './bot-avatar.component';
+import { SolutionPanelComponent } from './solution-panel.component';
 
 @Component({
   selector: 'app-message',
-  imports: [BotAvatarComponent],
+  imports: [BotAvatarComponent, SolutionPanelComponent],
   templateUrl: './message.component.html',
 })
 export class MessageComponent {
@@ -20,6 +21,7 @@ export class MessageComponent {
   readonly optionPicked = output<FlowOption>();
   readonly backClicked = output<void>();
   readonly restartClicked = output<void>();
+  readonly feedbackGiven = output<boolean>();
 
   protected readonly matchLabel: Record<MatchSource, string> = {
     Title: 'Título',
@@ -29,26 +31,30 @@ export class MessageComponent {
   };
 
   protected readonly bubbleClass = computed(() => {
+    const base = 'min-w-0 break-words text-sm';
     const m = this.message();
-    if (m.kind === 'user') return 'bg-indigo-600 text-white rounded-br-sm';
-    if (m.kind === 'text' && m.tone === 'error') {
-      return 'bg-red-50 text-red-800 ring-1 ring-red-200 rounded-tl-sm';
+
+    if (m.kind === 'user') {
+      return `${base} max-w-[85%] rounded-2xl rounded-br-sm bg-indigo-600 px-4 py-2.5 text-white shadow-sm`;
     }
-    if (m.kind === 'solution') return 'bg-white text-slate-800 ring-1 ring-emerald-300 rounded-tl-sm';
-    return 'bg-white text-slate-800 ring-1 ring-slate-200 rounded-tl-sm';
+    if (m.kind === 'solution') {
+      return `${base} flex-1`;
+    }
+    if (m.kind === 'text' && m.tone === 'error') {
+      return `${base} max-w-[85%] rounded-2xl rounded-tl-sm bg-red-50 px-4 py-2.5 text-red-800 shadow-sm ring-1 ring-red-200`;
+    }
+    return `${base} max-w-[85%] rounded-2xl rounded-tl-sm bg-white px-4 py-2.5 text-slate-800 shadow-sm ring-1 ring-slate-200`;
   });
 
-  /** Voltar/Recomeçar só fazem sentido no nó ativo e a partir do segundo passo do fluxo. */
+  /** Voltar/Recomeçar nas perguntas: só no nó ativo e a partir do segundo passo. (A solução tem a barra própria.) */
   protected readonly canNavigate = computed(() => {
     const m = this.message();
-    return this.active() && (m.kind === 'question' || m.kind === 'solution') && m.step > 0;
+    return this.active() && m.kind === 'question' && m.step > 0;
   });
 
   protected readonly optionsLocked = computed(() => {
     const m = this.message();
-    return (
-      this.disabled() || !this.active() || (m.kind === 'question' && m.chosenOptionId !== undefined)
-    );
+    return this.disabled() || !this.active() || (m.kind === 'question' && m.chosenOptionId !== undefined);
   });
 
   protected chipClass(active: boolean): string {

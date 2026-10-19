@@ -6,6 +6,7 @@ import { ApiService } from '../../core/api.service';
 import {
   Category,
   ChatMessage,
+  FeedbackState,
   FlowNode,
   FlowOption,
   NewChatMessage,
@@ -214,6 +215,36 @@ export class ChatStore {
     this.truncateToStep(current.flowId, 0);
   }
 
+  // ------------------------------------------------------------
+  // Feedback ("Isso resolveu?")
+  // ------------------------------------------------------------
+
+  /** Não usa busy/typing: o feedback não deve travar o chat. Em caso de erro, permite tentar de novo. */
+  async sendFeedback(messageId: number, resolved: boolean): Promise<void> {
+    const message = this.messages().find((m) => m.id === messageId);
+    if (!message || message.kind !== 'solution') return;
+    if (message.feedback?.status === 'sending' || message.feedback?.status === 'sent') return;
+
+    this.setFeedback(messageId, { resolved, status: 'sending' });
+
+    try {
+      await firstValueFrom(this.api.sendFeedback(message.solution.id, resolved));
+      this.setFeedback(messageId, { resolved, status: 'sent' });
+    } catch (err) {
+      console.error('[ChatStore] feedback', err);
+      this.setFeedback(messageId, { resolved, status: 'error' });
+    }
+  }
+
+  private setFeedback(messageId: number, feedback: FeedbackState): void {
+    this.messages.update((list) =>
+      list.map((m) => (m.id === messageId && m.kind === 'solution' ? { ...m, feedback } : m)),
+    );
+  }
+
+  // ------------------------------------------------------------
+  // Internos do fluxo
+  // ------------------------------------------------------------
   private async openTopic(topic: TopicChoice, stale: IsStale): Promise<void> {
     const node = await firstValueFrom(this.api.topicStart(topic.id));
     if (stale()) return;
@@ -272,7 +303,7 @@ export class ChatStore {
   }
 
   // ------------------------------------------------------------
-  // Internos
+  // Internos gerais
   // ------------------------------------------------------------
   private async showCategories(text: string, stale: IsStale): Promise<void> {
     if (!this.categoriesCache) {
@@ -293,6 +324,7 @@ export class ChatStore {
     try {
       await task(stale);
     } catch (err) {
+      console.error('[ChatStore]', err);
       if (!stale()) {
         this.push({ kind: 'text', tone: 'error', text: this.errorText(err) });
       }
@@ -321,6 +353,7 @@ export class ChatStore {
       if (err.status === 0) return 'Não consegui falar com o servidor. Verifique a conexão e tente novamente.';
       if (err.status === 404) return 'Este passo não está mais disponível. Use "Recomeçar" ou faça uma nova busca.';
       if (err.status >= 500) return 'O servidor encontrou um erro. Tente novamente em instantes.';
+      if (err.status === 200) return 'Resposta inesperada da API (verifique se o proxy /api está configurado).';
     }
     return 'Não foi possível concluir a consulta. Tente novamente.';
   }

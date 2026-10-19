@@ -1,0 +1,72 @@
+@let s = message().solution;
+
+<article class="rounded-2xl bg-white shadow-sm ring-1 ring-emerald-300">
+  <header class="rounded-t-2xl border-b border-emerald-100 bg-emerald-50/60 px-4 py-3">
+    <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700">{{ message().topicTitle }}</p>
+    <h2 class="mt-0.5 text-base font-semibold text-slate-900">{{ s.title }}</h2>
+    <p class="mt-1 text-sm text-slate-600">{{ s.summary }}</p>
+  </header>
+
+  <div class="flex flex-col gap-3 p-4">
+    @for (b of s.blocks; track b.id) {
+      <app-solution-block [block]="b" />
+    } @empty {
+      <p class="text-sm text-slate-500">Esta solução ainda não tem blocos cadastrados.</p>
+    }
+  </div>
+
+  <!-- Barra fixa: acompanha a rolagem enquanto o painel estiver na tela. -->
+  <footer
+    class="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-b-2xl border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur"
+  >
+    <div class="flex gap-2">
+      @if (canNavigate()) {
+        <button
+          type="button"
+          class="rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 disabled:cursor-not-allowed disabled:opacity-50"
+          [disabled]="disabled()"
+          (click)="backClicked.emit()"
+        >
+          ← Voltar
+        </button>
+        <button
+          type="button"
+          class="rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 disabled:cursor-not-allowed disabled:opacity-50"
+          [disabled]="disabled()"
+          (click)="restartClicked.emit()"
+        >
+          Recomeçar
+        </button>
+      }
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 text-sm">
+      @if (feedbackStatus() === 'sent') {
+        <span class="text-emerald-700" role="status">
+          ✓ Registrado: {{ feedbackResolved() ? 'resolveu' : 'não resolveu' }}. Obrigado!
+        </span>
+      } @else {
+        <span class="text-slate-600">Isso resolveu?</span>
+        <button
+          type="button"
+          class="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800 transition hover:bg-emerald-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
+          [disabled]="feedbackStatus() === 'sending'"
+          (click)="feedbackGiven.emit(true)"
+        >
+          Sim
+        </button>
+        <button
+          type="button"
+          class="rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 disabled:cursor-not-allowed disabled:opacity-50"
+          [disabled]="feedbackStatus() === 'sending'"
+          (click)="feedbackGiven.emit(false)"
+        >
+          Não
+        </button>
+        @if (feedbackStatus() === 'error') {
+          <span class="text-xs text-red-700" role="alert">Não foi possível registrar. Tente novamente.</span>
+        }
+      }
+    </div>
+  </footer>
+</article>

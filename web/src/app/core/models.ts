@@ -127,10 +127,17 @@ export interface QuestionMessage extends FlowMessage {
   chosenOptionId?: number;
 }
 
+/** Resposta do analista a "Isso resolveu?". */
+export interface FeedbackState {
+  resolved: boolean;
+  status: 'sending' | 'sent' | 'error';
+}
+
 export interface SolutionMessage extends FlowMessage {
   kind: 'solution';
   topicTitle: string;
   solution: SolutionData;
+  feedback?: FeedbackState;
 }
 
 export type ChatMessage =
