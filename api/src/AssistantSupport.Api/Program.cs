@@ -1,6 +1,8 @@
 using System.Text.Json.Serialization;
+using AssistantSupport.Api.Common;
 using AssistantSupport.Api.Data;
 using AssistantSupport.Api.Data.Seed;
+using AssistantSupport.Api.Features.Admin;
 using AssistantSupport.Api.Features.Attachments;
 using AssistantSupport.Api.Features.Catalog;
 using AssistantSupport.Api.Features.Feedbacks;
@@ -19,9 +21,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.ConfigureHttpJsonOptions(o =>
     o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
+builder.Services.AddSingleton<FileStorage>();
 builder.Services.AddScoped<DbSeeder>();
 builder.Services.AddScoped<SearchService>();
 builder.Services.AddScoped<FlowService>();
+builder.Services.AddScoped<AdminService>();
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
@@ -41,5 +45,6 @@ api.MapSearchEndpoints();
 api.MapFlowEndpoints();
 api.MapAttachmentEndpoints();
 api.MapFeedbackEndpoints();
+api.MapAdminEndpoints();
 
 app.Run();

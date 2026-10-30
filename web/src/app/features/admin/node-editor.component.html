@@ -1,0 +1,151 @@
+@if (draft(); as d) {
+  <div class="card flex flex-col gap-4">
+    <h3 class="text-sm font-semibold text-slate-900">
+      {{ node().type === 'Question' ? 'Pergunta' : 'Solução' }} #{{ node().id }}
+    </h3>
+
+    @if (error(); as e) {
+      <p class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800 ring-1 ring-red-200" role="alert">{{ e }}</p>
+    }
+    @if (info(); as i) {
+      <p class="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800 ring-1 ring-emerald-200" role="status">{{ i }}</p>
+    }
+
+    @if (node().type === 'Question') {
+      <div>
+        <label class="lbl" for="q-text">Texto da pergunta</label>
+        <input id="q-text" class="field" maxlength="500" [(ngModel)]="d.questionText" />
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <p class="lbl mb-0">Opções (cada uma leva a outro nó)</p>
+        @for (o of d.options; track o.key) {
+          <div class="flex flex-wrap items-center gap-2">
+            <input
+              class="field min-w-0 flex-1"
+              placeholder="Texto da opção (ex.: Pix)"
+              aria-label="Texto da opção"
+              maxlength="200"
+              [(ngModel)]="o.text"
+            />
+            <select class="field min-w-0 flex-1" aria-label="Destino da opção" [(ngModel)]="o.nextNodeId">
+              <option [ngValue]="null" disabled>Levar para…</option>
+              @for (t of targets(); track t.id) {
+                <option [ngValue]="t.id">{{ t.label }}</option>
+              }
+            </select>
+            <button type="button" class="btn btn-danger px-2" aria-label="Remover opção" (click)="removeOption($index)">✕</button>
+          </div>
+        } @empty {
+          <p class="text-sm text-slate-500">Nenhuma opção. Adicione ao menos uma.</p>
+        }
+        <div><button type="button" class="btn" (click)="addOption()">+ Opção</button></div>
+      </div>
+    } @else {
+      <div class="grid gap-3">
+        <div>
+          <label class="lbl" for="s-title">Título da solução</label>
+          <input id="s-title" class="field" maxlength="200" [(ngModel)]="d.title" />
+        </div>
+        <div>
+          <label class="lbl" for="s-summary">Resumo (uma linha, até 300 caracteres)</label>
+          <input id="s-summary" class="field" maxlength="300" [(ngModel)]="d.summary" />
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <p class="lbl mb-0">Blocos (na ordem em que aparecem para o analista)</p>
+
+        @for (b of d.blocks; track b.key) {
+          <div class="rounded-xl border border-slate-200 p-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <select class="field w-auto" aria-label="Tipo do bloco" [(ngModel)]="b.type">
+                @for (t of blockTypes; track t.value) {
+                  <option [ngValue]="t.value">{{ t.label }}</option>
+                }
+              </select>
+              <input
+                class="field min-w-0 flex-1"
+                placeholder="Título do bloco"
+                aria-label="Título do bloco"
+                maxlength="200"
+                [(ngModel)]="b.title"
+              />
+              <button type="button" class="btn px-2" aria-label="Subir bloco" [disabled]="$first" (click)="moveBlock($index, -1)">↑</button>
+              <button type="button" class="btn px-2" aria-label="Descer bloco" [disabled]="$last" (click)="moveBlock($index, 1)">↓</button>
+              <button type="button" class="btn btn-danger px-2" aria-label="Remover bloco" (click)="removeBlock($index)">✕</button>
+            </div>
+
+            <div class="mt-2 flex items-center justify-between gap-2">
+              <label class="flex items-center gap-1.5 text-sm text-slate-600">
+                <input type="checkbox" class="size-4 accent-indigo-600" [(ngModel)]="b.collapsedByDefault" />
+                Recolhido por padrão
+              </label>
+              <button type="button" class="btn px-2 py-1 text-xs" (click)="b.preview = !b.preview">
+                {{ b.preview ? 'Editar' : 'Pré-visualizar' }}
+              </button>
+            </div>
+
+            @if (b.preview) {
+              <div class="md mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm" [innerHTML]="b.contentMarkdown | markdown"></div>
+            } @else {
+              <textarea
+                class="field mt-2 font-mono"
+                rows="7"
+                aria-label="Conteúdo em Markdown"
+                [placeholder]="
+                  b.type === 'Steps'
+                    ? '1. Primeiro passo&#10;2. Segundo passo (cada item de lista vira um item do checklist)'
+                    : 'Conteúdo em Markdown'
+                "
+                [(ngModel)]="b.contentMarkdown"
+              ></textarea>
+            }
+
+            @if (b.type === 'Attachments') {
+              <div class="mt-3 rounded-lg bg-slate-50 p-3">
+                <p class="text-xs font-medium text-slate-600">PDFs deste bloco (zero ou mais)</p>
+
+                @for (a of b.attachments; track a.id) {
+                  <div class="mt-2 flex items-center justify-between gap-2 text-sm">
+                    <span class="min-w-0 truncate">
+                      {{ a.fileName }}
+                      <span class="text-xs text-slate-500">· {{ size(a.sizeBytes) }}</span>
+                    </span>
+                    <button type="button" class="btn btn-danger px-2 py-1 text-xs" (click)="removeAttachment(b, a)">Remover</button>
+                  </div>
+                }
+
+                @if (b.id === undefined) {
+                  <p class="mt-2 text-xs text-slate-500">Salve a solução para habilitar o envio de PDFs.</p>
+                } @else {
+                  <input
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    class="mt-2 block text-sm"
+                    aria-label="Enviar PDF"
+                    [disabled]="uploading() === b.key"
+                    (change)="upload(b, $event)"
+                  />
+                  @if (uploading() === b.key) {
+                    <p class="mt-1 text-xs text-slate-500">Enviando…</p>
+                  }
+                }
+              </div>
+            }
+          </div>
+        } @empty {
+          <p class="text-sm text-slate-500">Nenhum bloco. Adicione ao menos um.</p>
+        }
+
+        <div><button type="button" class="btn" (click)="addBlock()">+ Bloco</button></div>
+      </div>
+    }
+
+    <div>
+      <button type="button" class="btn btn-primary" [disabled]="busy()" (click)="save()">
+        {{ busy() ? 'Salvando…' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+}

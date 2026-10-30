@@ -1,3 +1,4 @@
+using AssistantSupport.Api.Common;
 using AssistantSupport.Api.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +13,7 @@ public static class AttachmentEndpoints
             Guid id,
             HttpContext http,
             AppDbContext db,
-            IConfiguration config,
+            FileStorage storage,
             ILoggerFactory loggers,
             CancellationToken ct) =>
         {
@@ -27,10 +28,7 @@ public static class AttachmentEndpoints
             if (attachment is null)
                 return Results.NotFound();
 
-            // Nome em disco = {Id}.pdf, montado a partir do registro do banco.
-            var root = Path.GetFullPath(
-                config["Storage:Path"] ?? Path.Combine(AppContext.BaseDirectory, "storage"));
-            var path = Path.Combine(root, $"{attachment.Id}.pdf");
+            var path = storage.PathFor(attachment.Id);
 
             if (!File.Exists(path))
             {
@@ -45,7 +43,6 @@ public static class AttachmentEndpoints
                 path, FileMode.Open, FileAccess.Read, FileShare.Read, 4096,
                 FileOptions.Asynchronous | FileOptions.SequentialScan);
 
-            // fileDownloadName gera Content-Disposition: attachment (com encoding de acentos).
             return Results.File(stream, "application/pdf", attachment.OriginalFileName);
         });
 
