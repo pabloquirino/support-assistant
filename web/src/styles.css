@@ -1,38 +1,32 @@
 @import "tailwindcss";
 
-/* Conteúdo Markdown renderizado (sanitizado) dentro das soluções. */
-.md {
-  line-height: 1.55;
-  overflow-wrap: anywhere;
+/* Utilitários do admin */
+@layer components {
+  .field {
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-100;
+  }
+
+  .lbl {
+    @apply mb-1 block text-xs font-medium text-slate-600;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700;
+  }
+
+  .btn-danger {
+    @apply border-red-300 text-red-700 hover:bg-red-50;
+  }
+
+  .card {
+    @apply rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200;
+  }
+
+  .badge {
+    @apply ml-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800;
+  }
 }
-.md > :first-child { margin-top: 0; }
-.md > :last-child { margin-bottom: 0; }
-.md p { margin: 0.5rem 0; }
-.md ul { list-style: disc; padding-left: 1.25rem; margin: 0.5rem 0; }
-.md ol { list-style: decimal; padding-left: 1.25rem; margin: 0.5rem 0; }
-.md li { margin: 0.2rem 0; }
-.md strong { font-weight: 600; }
-.md em { font-style: italic; }
-.md a { color: #4338ca; text-decoration: underline; }
-.md code {
-  background: rgb(0 0 0 / 0.06);
-  border-radius: 0.25rem;
-  padding: 0.05rem 0.3rem;
-  font-size: 0.875em;
-}
-.md pre {
-  background: rgb(0 0 0 / 0.06);
-  border-radius: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  overflow-x: auto;
-}
-.md pre code { background: none; padding: 0; }
-.md blockquote {
-  border-left: 3px solid rgb(0 0 0 / 0.15);
-  padding-left: 0.75rem;
-  margin: 0.5rem 0;
-  opacity: 0.85;
-}
-.md h1, .md h2, .md h3, .md h4 { font-weight: 600; margin: 0.75rem 0 0.25rem; }
-.md table { border-collapse: collapse; margin: 0.5rem 0; display: block; overflow-x: auto; }
-.md th, .md td { border: 1px solid rgb(0 0 0 / 0.15); padding: 0.25rem 0.5rem; }
