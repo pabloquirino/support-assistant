@@ -1,14 +1,14 @@
 # Assistant Support
 
-Assistente interno de suporte com cara de chat. O analista descreve o problema do cliente, o sistema encontra o procedimento cadastrado, faz perguntas guiadas quando necessário (ex.: "Pix, boleto ou cartão?") e mostra a solução com passo a passo, mensagem pronta para o cliente, modelo de ticket e PDFs.
+O objetivo era resolver um problema simples, um "chatbot de IA" para auxiliar o dia a dia de um time de analistas de suporte. 
+
+Durante o planejamente foi pensado em criar uma base com diversos documentos e procedimentos de uma empresa e criar um agente que consultasse antes de gerar uma resposta, porém haviam dois problemas, comprometer dados internos de uma empresa e ferir leis de proteção de dados.
+
+Outra alterativa era um "Rag", o que era complexo demais e iria gerar um consumo de tokens desnecessáro.
+
+Então decidi o caminho mais simples, cadastrar procedimentos de forma manual, e a interface se comportando como um chatbot, reconhecendo intenções e renderizando respostas prontas.
 
 **Sem IA:** a busca é determinística (texto normalizado + palavras-chave e sinônimos), e toda resposta vem do que foi cadastrado no painel admin.
-
-## Funcionalidades
-
-- **Chat:** busca em texto livre ou por categorias, perguntas encadeadas, solução em blocos com botão Copiar e feedback "Isso resolveu?".
-- **Admin:** cadastro de categorias, assuntos, fluxos de perguntas, soluções e anexos PDF, além de gestão de usuários e métricas (buscas sem resultado e taxa de resolução).
-- **Perfis:** Analista (usa o chat) e Admin (chat + administração).
 
 ## Arquitetura
 
