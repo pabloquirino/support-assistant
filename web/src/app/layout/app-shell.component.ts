@@ -42,11 +42,7 @@ const COLLAPSED_KEY = 'as-sidebar-collapsed';
         <!-- Marca + recolher -->
         <div class="flex h-14 items-center justify-between gap-2 px-3">
           <a routerLink="/" class="flex min-w-0 items-center gap-2.5 rounded-lg px-1 py-1">
-            <span
-              class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-xs font-semibold text-white"
-            >
-              AS
-            </span>
+            <img src="icone.png" alt="" class="size-8 shrink-0" width="32" height="32" />
             <span class="truncate text-sm font-semibold text-slate-900">Assistant Support</span>
           </a>
           <button
@@ -141,6 +137,7 @@ const COLLAPSED_KEY = 'as-sidebar-collapsed';
             <app-icon class="size-5 md:hidden" name="menu" />
             <app-icon class="hidden size-5 md:inline-block" name="sidebar" />
           </button>
+          <img src="icone.png" alt="" class="size-7 shrink-0" width="28" height="28" />
           <span class="truncate text-sm font-semibold text-slate-900">Assistant Support</span>
           <button
             type="button"

@@ -13,9 +13,7 @@ import { ThemeSwitcherComponent } from '../../shared/theme-switcher.component';
     <div class="flex min-h-dvh flex-col items-center justify-center gap-6 bg-slate-100 px-4">
       <form class="card w-full max-w-sm p-6" (ngSubmit)="submit()" #f="ngForm">
         <div class="mb-6 flex items-center gap-3">
-          <div class="flex size-10 items-center justify-center rounded-xl bg-indigo-600 text-sm font-semibold text-white">
-            AS
-          </div>
+          <img src="icone.png" alt="" class="size-12 shrink-0" width="48" height="48" />
           <div>
             <h1 class="text-base font-semibold leading-tight text-slate-900">Assistant Support</h1>
             <p class="text-xs text-slate-500">Entre com sua conta para continuar</p>
