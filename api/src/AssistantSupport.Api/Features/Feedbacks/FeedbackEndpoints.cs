@@ -1,5 +1,7 @@
 using AssistantSupport.Api.Data;
+using System.Security.Claims;
 using AssistantSupport.Api.Domain;
+using AssistantSupport.Api.Features.Auth;
 using Microsoft.EntityFrameworkCore;
 
 namespace AssistantSupport.Api.Features.Feedbacks;
@@ -10,7 +12,7 @@ public static class FeedbackEndpoints
 {
     public static IEndpointRouteBuilder MapFeedbackEndpoints(this IEndpointRouteBuilder api)
     {
-        api.MapPost("/feedback", async (CreateFeedbackRequest request, AppDbContext db, CancellationToken ct) =>
+        api.MapPost("/feedback", async (CreateFeedbackRequest request, ClaimsPrincipal user, AppDbContext db, CancellationToken ct) =>
         {
             var title = await db.Solutions
                 .AsNoTracking()
@@ -25,7 +27,8 @@ public static class FeedbackEndpoints
             {
                 SolutionId = request.SolutionId,
                 SolutionTitle = title, // snapshot: as métricas sobrevivem à exclusão da solução
-                Resolved = request.Resolved
+                Resolved = request.Resolved,
+                UserId = user.GetUserId()
             });
 
             await db.SaveChangesAsync(ct);

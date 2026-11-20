@@ -1,3 +1,6 @@
+using System.Security.Claims;
+using AssistantSupport.Api.Features.Auth;
+
 namespace AssistantSupport.Api.Features.Search;
 
 public static class SearchEndpoints
@@ -7,7 +10,7 @@ public static class SearchEndpoints
 
     public static IEndpointRouteBuilder MapSearchEndpoints(this IEndpointRouteBuilder api)
     {
-        api.MapGet("/search", async (string? q, SearchService search, CancellationToken ct) =>
+        api.MapGet("/search", async (string? q, ClaimsPrincipal user, SearchService search, CancellationToken ct) =>
         {
             var term = (q ?? string.Empty).Trim();
 
@@ -17,7 +20,7 @@ public static class SearchEndpoints
             if (term.Length > MaxLength)
                 term = term[..MaxLength];
 
-            return Results.Ok(await search.SearchAsync(term, ct));
+            return Results.Ok(await search.SearchAsync(term, user.GetUserId(), ct));
         });
 
         return api;

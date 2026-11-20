@@ -1,10 +1,16 @@
+using System.Security.Claims;
+using AssistantSupport.Api.Features.Auth;
+using AssistantSupport.Api.Features.Metrics;
+using AssistantSupport.Api.Features.Users;
+
 namespace AssistantSupport.Api.Features.Admin;
 
 public static class AdminEndpoints
 {
     public static IEndpointRouteBuilder MapAdminEndpoints(this IEndpointRouteBuilder api)
     {
-        var g = api.MapGroup("/admin");
+        // Toda a área administrativa exige o perfil Admin.
+        var g = api.MapGroup("/admin").RequireAuthorization(AuthPolicies.Admin);
 
         g.AddEndpointFilter(async (ctx, next) =>
         {
@@ -58,15 +64,28 @@ public static class AdminEndpoints
             return Results.NoContent();
         });
 
-        // Anexos (campo multipart "file")
+        // Anexos (campo multipart "file"). O antiforgery fica ativo: o front envia X-XSRF-TOKEN.
         g.MapPost("/blocks/{blockId:int}/attachments", (int blockId, IFormFile file, AdminService s, CancellationToken ct) =>
-                s.AddAttachmentAsync(blockId, file, ct))
-            .DisableAntiforgery();
+            s.AddAttachmentAsync(blockId, file, ct));
         g.MapDelete("/attachments/{id:guid}", async (Guid id, AdminService s, CancellationToken ct) =>
         {
             await s.DeleteAttachmentAsync(id, ct);
             return Results.NoContent();
         });
+
+        // Usuários
+        g.MapGet("/users", (UserService s, CancellationToken ct) => s.ListAsync(ct));
+        g.MapPost("/users", (CreateUserRequest r, UserService s, CancellationToken ct) => s.CreateAsync(r, ct));
+        g.MapPut("/users/{id:int}", (int id, UpdateUserRequest r, ClaimsPrincipal me, UserService s, CancellationToken ct) =>
+            s.UpdateAsync(id, r, me.GetUserId() ?? 0, ct));
+        g.MapPost("/users/{id:int}/password", async (int id, ResetPasswordRequest r, UserService s, CancellationToken ct) =>
+        {
+            await s.ResetPasswordAsync(id, r, ct);
+            return Results.NoContent();
+        });
+
+        // Métricas (buscas sem resultado e feedbacks) dos últimos N dias
+        g.MapGet("/metrics", (int? days, MetricsService s, CancellationToken ct) => s.GetAsync(days ?? 30, ct));
 
         return api;
     }
