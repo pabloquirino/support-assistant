@@ -1,7 +1,4 @@
 import { Component, ElementRef, OnInit, afterRenderEffect, inject, viewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
-
-import { AuthService } from '../../core/auth.service';
 
 import { BotAvatarComponent } from './bot-avatar.component';
 import { ChatInputComponent } from './chat-input.component';
@@ -10,12 +7,12 @@ import { MessageComponent } from './message.component';
 
 @Component({
   selector: 'app-chat-page',
-  imports: [MessageComponent, ChatInputComponent, BotAvatarComponent, RouterLink],
+  imports: [MessageComponent, ChatInputComponent, BotAvatarComponent],
+  host: { class: 'flex min-h-0 flex-1 flex-col' },
   templateUrl: './chat.page.html',
 })
 export class ChatPage implements OnInit {
   protected readonly store = inject(ChatStore);
-  protected readonly auth = inject(AuthService);
   private readonly scroller = viewChild.required<ElementRef<HTMLElement>>('scroller');
 
   constructor() {

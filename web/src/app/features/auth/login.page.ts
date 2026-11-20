@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { AuthService } from '../../core/auth.service';
+import { ThemeSwitcherComponent } from '../../shared/theme-switcher.component';
 
 @Component({
   selector: 'app-login-page',
-  imports: [FormsModule],
+  imports: [FormsModule, ThemeSwitcherComponent],
   template: `
-    <div class="flex min-h-dvh items-center justify-center bg-slate-100 px-4">
+    <div class="flex min-h-dvh flex-col items-center justify-center gap-6 bg-slate-100 px-4">
       <form class="card w-full max-w-sm p-6" (ngSubmit)="submit()" #f="ngForm">
         <div class="mb-6 flex items-center gap-3">
           <div class="flex size-10 items-center justify-center rounded-xl bg-indigo-600 text-sm font-semibold text-white">
@@ -53,6 +54,9 @@ import { AuthService } from '../../core/auth.service';
           {{ busy() ? 'Entrando…' : 'Entrar' }}
         </button>
       </form>
+      <div class="w-full max-w-xs">
+        <app-theme-switcher />
+      </div>
     </div>
   `,
 })

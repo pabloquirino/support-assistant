@@ -1,30 +1,6 @@
-<div class="flex h-dvh flex-col bg-slate-100">
-  <header class="border-b border-slate-200 bg-white">
-    <div class="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
-      <div class="flex items-center gap-3">
-        <div class="flex size-9 items-center justify-center rounded-xl bg-indigo-600 text-sm font-semibold text-white">
-          AS
-        </div>
-        <div>
-          <h1 class="text-base font-semibold leading-tight text-slate-900">Assistant Support</h1>
-          <p class="text-xs text-slate-500">Procedimentos de suporte, passo a passo</p>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <button type="button" class="btn" (click)="store.reset()">Nova conversa</button>
-        @if (auth.isAdmin()) {
-          <a routerLink="/admin" class="btn">Administração</a>
-        }
-        <button type="button" class="btn" [title]="'Sair (' + (auth.user()?.name ?? '') + ')'" (click)="auth.logout()">
-          Sair
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <main #scroller class="flex-1 overflow-y-auto" role="log" aria-label="Conversa">
-    <div class="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-6">
+<div class="flex min-h-0 flex-1 flex-col">
+  <div #scroller class="min-h-0 flex-1 overflow-y-auto" role="log" aria-label="Conversa">
+    <div class="mx-auto flex max-w-3xl flex-col gap-5 px-4 py-6 md:py-10">
       @for (m of store.messages(); track m.id) {
         <app-message
           [attr.data-message-id]="m.id"
@@ -44,7 +20,7 @@
         <div class="flex items-start gap-3">
           <app-bot-avatar />
           <div
-            class="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-4 py-3.5 shadow-sm ring-1 ring-slate-200"
+            class="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-surface px-4 py-3.5 shadow-sm ring-1 ring-slate-200"
             role="status"
             aria-label="Buscando"
           >
@@ -55,11 +31,15 @@
         </div>
       }
     </div>
-  </main>
+  </div>
 
-  <footer class="border-t border-slate-200 bg-white">
-    <div class="mx-auto max-w-3xl px-4 py-3">
+  <!-- Composer: flutua sobre um degradê do fundo, como nos chats de LLM. -->
+  <div class="shrink-0 bg-linear-to-t from-slate-100 from-60% to-transparent px-4 pb-4 pt-2">
+    <div class="mx-auto max-w-3xl">
       <app-chat-input [disabled]="store.busy()" (submitted)="store.send($event)" />
+      <p class="mt-2 text-center text-xs text-slate-500">
+        Respostas vêm dos procedimentos cadastrados pela equipe, sem IA.
+      </p>
     </div>
-  </footer>
+  </div>
 </div>

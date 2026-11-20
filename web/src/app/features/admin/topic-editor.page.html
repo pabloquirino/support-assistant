@@ -79,7 +79,7 @@
               <button
                 type="button"
                 class="min-w-0 flex-1 rounded-lg border px-3 py-2 text-left text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
-                [class]="selected()?.id === n.id ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-white hover:bg-slate-50'"
+                [class]="selected()?.id === n.id ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-surface hover:bg-slate-50'"
                 (click)="selectNode(n)"
               >
                 {{ label(n) }}

@@ -7,10 +7,10 @@ import { MarkdownService } from '../../core/markdown.service';
 import { BlockType, SolutionBlock } from '../../core/models';
 
 const CONTAINER: Record<BlockType, string> = {
-  Steps: 'border-slate-200 bg-white',
-  CustomerMessage: 'border-indigo-200 bg-white',
-  Ticket: 'border-slate-300 bg-white',
-  Attachments: 'border-slate-200 bg-white',
+  Steps: 'border-slate-200 bg-surface',
+  CustomerMessage: 'border-indigo-200 bg-surface',
+  Ticket: 'border-slate-300 bg-surface',
+  Attachments: 'border-slate-200 bg-surface',
   Note: 'border-sky-200 border-l-4 border-l-sky-500 bg-sky-50',
   Warning: 'border-amber-300 border-l-4 border-l-amber-500 bg-amber-50',
 };

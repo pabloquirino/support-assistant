@@ -1,6 +1,6 @@
 @let s = message().solution;
 
-<article class="rounded-2xl bg-white shadow-sm ring-1 ring-emerald-300">
+<article class="rounded-2xl bg-surface shadow-sm ring-1 ring-emerald-300">
   <header class="rounded-t-2xl border-b border-emerald-100 bg-emerald-50/60 px-4 py-3">
     <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700">{{ message().topicTitle }}</p>
     <h2 class="mt-0.5 text-base font-semibold text-slate-900">{{ s.title }}</h2>
@@ -17,7 +17,7 @@
 
   <!-- Barra fixa: acompanha a rolagem enquanto o painel estiver na tela. -->
   <footer
-    class="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-b-2xl border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur"
+    class="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-b-2xl border-t border-slate-200 bg-surface/95 px-4 py-3 backdrop-blur"
   >
     <div class="flex gap-2">
       @if (canNavigate()) {
@@ -57,7 +57,7 @@
         </button>
         <button
           type="button"
-          class="rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 disabled:cursor-not-allowed disabled:opacity-50"
+          class="rounded-lg border border-slate-300 bg-surface px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 disabled:cursor-not-allowed disabled:opacity-50"
           [disabled]="feedbackStatus() === 'sending'"
           (click)="feedbackGiven.emit(false)"
         >
