@@ -8,6 +8,7 @@ import { MessageComponent } from './message.component';
 @Component({
   selector: 'app-chat-page',
   imports: [MessageComponent, ChatInputComponent, BotAvatarComponent],
+  host: { class: 'flex min-h-0 flex-1 flex-col' },
   templateUrl: './chat.page.html',
 })
 export class ChatPage implements OnInit {

@@ -101,3 +101,57 @@ export function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / 1024 / 1024).toFixed(1).replace('.', ',')} MB`;
 }
+// ---- Usuários ----
+export type UserRole = 'Analyst' | 'Admin';
+
+export interface AdminUser {
+  id: number;
+  name: string;
+  email: string;
+  role: UserRole;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface CreateUserBody {
+  name: string;
+  email: string;
+  password: string;
+  role: UserRole;
+}
+
+export interface UpdateUserBody {
+  name: string;
+  email: string;
+  role: UserRole;
+  isActive: boolean;
+}
+
+// ---- Métricas ----
+export interface UnansweredSearch {
+  normalizedTerm: string;
+  count: number;
+  lastAt: string;
+}
+
+export interface SolutionFeedback {
+  /** null = soluções já excluídas (agrupadas). */
+  solutionId: number | null;
+  solutionTitle: string;
+  topicTitle: string | null;
+  total: number;
+  resolved: number;
+  notResolved: number;
+  resolvedRate: number;
+  lastAt: string;
+}
+
+export interface Metrics {
+  days: number;
+  totalSearches: number;
+  searchesWithoutResult: number;
+  totalFeedback: number;
+  resolvedFeedback: number;
+  unansweredSearches: UnansweredSearch[];
+  solutions: SolutionFeedback[];
+}

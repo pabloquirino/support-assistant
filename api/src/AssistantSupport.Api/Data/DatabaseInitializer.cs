@@ -20,6 +20,9 @@ public static class DatabaseInitializer
             await db.Database.MigrateAsync();
         }
 
+        // Admin inicial (ADMIN_EMAIL/ADMIN_PASSWORD): roda mesmo com DB_SEED=false.
+        await scope.ServiceProvider.GetRequiredService<AdminSeeder>().SeedAsync();
+
         if (seed)
         {
             var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();

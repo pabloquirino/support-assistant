@@ -9,8 +9,12 @@ import {
   AdminTerm,
   AdminTopic,
   AdminTopicItem,
+  AdminUser,
+  CreateUserBody,
+  Metrics,
   QuestionBody,
   SolutionBody,
+  UpdateUserBody,
 } from './admin.models';
 
 export interface CategoryBody {
@@ -102,6 +106,28 @@ export class AdminApiService {
   deleteAttachment(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/attachments/${id}`);
   }
+
+  // Usuários
+  users(): Observable<AdminUser[]> {
+    return this.http.get<AdminUser[]>(`${this.base}/users`);
+  }
+
+  createUser(body: CreateUserBody): Observable<AdminUser> {
+    return this.http.post<AdminUser>(`${this.base}/users`, body);
+  }
+
+  updateUser(id: number, body: UpdateUserBody): Observable<AdminUser> {
+    return this.http.put<AdminUser>(`${this.base}/users/${id}`, body);
+  }
+
+  resetPassword(id: number, password: string): Observable<void> {
+    return this.http.post<void>(`${this.base}/users/${id}/password`, { password });
+  }
+
+  // Métricas
+  metrics(days: number): Observable<Metrics> {
+    return this.http.get<Metrics>(`${this.base}/metrics`, { params: { days } });
+  }
 }
 
 /** Prefere a mensagem de negócio devolvida pela API ({ error }). */
@@ -111,6 +137,7 @@ export function adminErrorMessage(err: unknown): string {
     if (typeof message === 'string') return message;
     if (err.status === 0) return 'Não consegui falar com o servidor.';
     if (err.status === 413) return 'O arquivo é grande demais.';
+    if (err.status === 403) return 'Seu perfil não tem acesso a esta área.';
     if (err.status === 404) return 'Registro não encontrado.';
     if (err.status >= 500) return 'Erro no servidor. Tente novamente.';
   }

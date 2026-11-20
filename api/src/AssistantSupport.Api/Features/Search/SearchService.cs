@@ -35,12 +35,12 @@ public partial class SearchService(AppDbContext db, ILogger<SearchService> logge
         "e", "em", "no", "na", "nos", "nas", "para", "por", "com", "ao", "que"
     ];
 
-    public async Task<SearchResponse> SearchAsync(string term, CancellationToken ct)
+    public async Task<SearchResponse> SearchAsync(string term, int? userId, CancellationToken ct)
     {
         var normalized = TextNormalizer.Normalize(term);
         var ranked = await RankAsync(normalized, ct);
 
-        await LogAsync(term, normalized, ranked.Count);
+        await LogAsync(term, normalized, ranked.Count, userId);
 
         return new SearchResponse(term, ranked.Count, ranked.Take(MaxResults).ToList());
     }
@@ -211,7 +211,7 @@ public partial class SearchService(AppDbContext db, ILogger<SearchService> logge
     [GeneratedRegex(@"[^\p{L}\p{N}]+")]
     private static partial Regex TokenSplitter();
 
-    private async Task LogAsync(string term, string normalized, int resultCount)
+    private async Task LogAsync(string term, string normalized, int resultCount, int? userId)
     {
         try
         {
@@ -219,7 +219,8 @@ public partial class SearchService(AppDbContext db, ILogger<SearchService> logge
             {
                 Term = term,
                 NormalizedTerm = normalized,
-                ResultCount = resultCount
+                ResultCount = resultCount,
+                UserId = userId
             });
 
             await db.SaveChangesAsync(CancellationToken.None);

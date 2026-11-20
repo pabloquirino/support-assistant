@@ -27,6 +27,11 @@ services:
       Storage__MaxUploadMb: ${UPLOAD_MAX_MB:-10}
       Database__AutoMigrate: ${DB_AUTO_MIGRATE:-true}
       Database__Seed: ${DB_SEED:-true}
+      # Primeiro administrador (criado só enquanto não houver nenhum admin)
+      Admin__Email: ${ADMIN_EMAIL:-}
+      Admin__Password: ${ADMIN_PASSWORD:-}
+      Admin__Name: ${ADMIN_NAME:-Administrador}
+      Auth__SessionHours: ${SESSION_HOURS:-8}
     volumes:
       - files-data:/app/storage
     depends_on:

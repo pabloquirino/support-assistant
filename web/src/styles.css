@@ -1,9 +1,121 @@
 @import "tailwindcss";
 
+/*
+ * Temas
+ * -----
+ * Os componentes usam as paletas slate/indigo (e red/emerald/amber/sky) do Tailwind.
+ * No Tailwind v4 cada cor é uma variável CSS: redefinir essas variáveis por tema
+ * (atributo data-theme no <html>) troca a aparência da aplicação inteira.
+ * Fundo de cartões e painéis usa o token próprio "surface" (bg-surface), porque
+ * "white" continua sendo branco de verdade (texto sobre botões).
+ */
+@theme {
+  --color-surface: #ffffff;
+  --color-sidebar: #f8fafc;
+}
+
+:root {
+  color-scheme: light;
+}
+
+/* ---------------- Escuro ---------------- */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-surface: #1b2130;
+  --color-sidebar: #111622;
+
+  --color-slate-50: #222a3b;
+  --color-slate-100: #151a26;
+  --color-slate-200: #2c3446;
+  --color-slate-300: #3a4458;
+  --color-slate-400: #5f6b84;
+  --color-slate-500: #8f9ab1;
+  --color-slate-600: #aab4c8;
+  --color-slate-700: #c5cddc;
+  --color-slate-800: #dbe1eb;
+  --color-slate-900: #edf1f7;
+  --color-slate-950: #f8fafc;
+
+  --color-indigo-50: #252a4d;
+  --color-indigo-100: #2d3360;
+  --color-indigo-200: #3b4280;
+  --color-indigo-300: #5960b5;
+  --color-indigo-400: #7c83e6;
+  --color-indigo-500: #8b92f2;
+  --color-indigo-600: #6366f1;
+  --color-indigo-700: #7c80f5;
+
+  --color-red-50: #3a1d22;
+  --color-red-200: #5c2a31;
+  --color-red-300: #7a343d;
+  --color-red-700: #fca5a5;
+  --color-red-800: #fecaca;
+
+  --color-emerald-50: #13302a;
+  --color-emerald-100: #174036;
+  --color-emerald-200: #1d5244;
+  --color-emerald-300: #24695a;
+  --color-emerald-700: #6ee7b7;
+  --color-emerald-800: #a7f3d0;
+
+  --color-amber-50: #36290f;
+  --color-amber-300: #6b5216;
+  --color-amber-600: #fbbf24;
+  --color-amber-700: #fcd34d;
+  --color-amber-950: #fef3c7;
+
+  --color-sky-50: #11293a;
+  --color-sky-200: #1b4560;
+  --color-sky-600: #7dd3fc;
+  --color-sky-950: #e0f2fe;
+}
+
+/* ---------------- Sépia (alternativo: papel quente, menos contraste) ---------------- */
+:root[data-theme='sepia'] {
+  color-scheme: light;
+
+  --color-surface: #fdf8ee;
+  --color-sidebar: #efe5d1;
+
+  --color-slate-50: #f7efdf;
+  --color-slate-100: #f3ead8;
+  --color-slate-200: #e5d8bf;
+  --color-slate-300: #d5c4a4;
+  --color-slate-400: #ab987c;
+  --color-slate-500: #87745c;
+  --color-slate-600: #6d5c47;
+  --color-slate-700: #594a39;
+  --color-slate-800: #44382b;
+  --color-slate-900: #30271e;
+  --color-slate-950: #1f1913;
+
+  --color-indigo-50: #f6e4d5;
+  --color-indigo-100: #efd3bd;
+  --color-indigo-200: #e5bf9f;
+  --color-indigo-300: #d69a70;
+  --color-indigo-400: #c47e50;
+  --color-indigo-500: #b0683a;
+  --color-indigo-600: #9a522a;
+  --color-indigo-700: #7f4120;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-100 text-slate-900 antialiased;
+  }
+
+  /* Padrão dos ícones; utilitários (hidden, md:inline-block...) sobrescrevem. */
+  app-icon {
+    display: inline-block;
+    flex-shrink: 0;
+  }
+}
+
 /* Utilitários do admin */
 @layer components {
   .field {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-100;
+    @apply w-full rounded-lg border border-slate-300 bg-surface px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-100;
   }
 
   .lbl {
@@ -11,7 +123,7 @@
   }
 
   .btn {
-    @apply inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-lg border border-slate-300 bg-surface px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .btn-primary {
@@ -23,10 +135,55 @@
   }
 
   .card {
-    @apply rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200;
+    @apply rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-slate-200;
+  }
+
+  /* Itens do menu lateral */
+  .nav-link {
+    @apply flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-200/70 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300;
   }
 
   .badge {
     @apply ml-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800;
   }
+
+  /* Conteúdo Markdown das soluções (o preflight do Tailwind zera listas e títulos). */
+  .md {
+    @apply text-sm leading-relaxed text-slate-800;
+  }
+  .md > * + * {
+    @apply mt-2;
+  }
+  .md ul {
+    @apply list-disc pl-5;
+  }
+  .md ol {
+    @apply list-decimal pl-5;
+  }
+  .md li + li {
+    @apply mt-1;
+  }
+  .md a {
+    @apply font-medium text-indigo-600 underline underline-offset-2 hover:text-indigo-700;
+  }
+  .md strong {
+    @apply font-semibold text-slate-900;
+  }
+  .md h1,
+  .md h2,
+  .md h3 {
+    @apply font-semibold text-slate-900;
+  }
+  .md code {
+    @apply rounded bg-slate-100 px-1 py-0.5 font-mono text-[0.85em];
+  }
+  .md blockquote {
+    @apply border-l-2 border-slate-300 pl-3 text-slate-600;
+  }
+}
+
+/* Barras de rolagem discretas, acompanhando o tema. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-slate-300) transparent;
 }
